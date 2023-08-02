@@ -21,7 +21,7 @@ module Finance
         low::Vector{Float64}
         open::Vector{Float64}
         close::Vector{Float64}
-        returns::Float64
+        returns::Vector{Float64}
     end
 
     # --------------------------------------------------
@@ -33,10 +33,13 @@ module Finance
     # --------------------------------------------------
     struct Portfolio
         assets::Vector{Asset}
-        weights::Vector{Float64}
-        returns::Float64
+        returns::Vector{Float64}
+        cov_matrix::Matrix{Float64}
     end
 
+    # --------------------------------------------------
+    # Construtor Asset
+    # --------------------------------------------------
     function Asset(symbol::AbstractString, start_date::Date, end_date::Date)
         data = get_prices(symbol, startdt = start_date, enddt = end_date)
 
@@ -47,17 +50,20 @@ module Finance
         low = data["low"]
 
         daily_returns  = [i == 1 ? 0 : (close[i]-close[i-1])/close[i-1] for i in eachindex(close)]
-        returns = cumprod(1 .+ daily_returns)[end]
 
-        return Asset(symbol,timestamps, high, low, open, close, returns)
+        return Asset(symbol, timestamps, high, low, open, close, daily_returns)
     end
 
-
-    function Portfolio(symbol_list::Vector{AbstractString}, weights::Vector{Float64}, start_date::Date, end_date::Date)
+    # --------------------------------------------------
+    # Construtor Portfolio
+    # --------------------------------------------------
+    function Portfolio(symbol_list::Vector{AbstractString}, start_date::Date, end_date::Date)
         assets = [Asset(symbol, start_date, end_date) for symbol in symbol_list]
 
-        returns = sum([asset.returns * weight for (asset, weight) in zip(assets, weights)])
+        returns = [mean(asset.returns) for asset in assets]
 
-        return Portfolio(assets, weights, returns)
+        cov_matrix = Statistics.cov(hcat([asset.returns for asset in assets]...))
+
+        return Portfolio(assets, returns, cov_matrix)
     end
 end
