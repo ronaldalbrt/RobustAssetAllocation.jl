@@ -25,22 +25,40 @@ module MarkowitzModel
 
         models = Vector{Model}()
         for risk_level in risk_levels
-            model = Model(() -> Gurobi.Optimizer(GRB_ENV))
-            set_optimizer_attribute(model, "OutputFlag", 0)
-            set_optimizer_attribute(model, "TimeLimit", 100)
-            set_optimizer_attribute(model, "MIPGap", 0.001)
-            set_optimizer_attribute(model, "Threads", min(length(Sys.cpu_info()),16))
-
-            @variable(model, x[1:n] >= 0)
-
-            @constraint(model, sum(x) == 1)
-
-            @objective(model, Max, risk_level*(mean'*x) - (1 - risk_level) * (x'*cov*x))
+            model = model_formulation(mean, cov, risk_level, GRB_ENV)
             
             push!(models, model)
         end
         
         return MarkowitzModelData(mean, cov, risk_levels, models)
+    end
+
+    # --------------------------------------------------
+    # Modelo de Markowitz
+    # --------------------------------------------------
+    # Parâmetros:
+    # mean: Vetor de médias dos ativos
+    # cov: Matriz de covariância dos ativos
+    # risk_level: Nível de risco
+    # --------------------------------------------------
+    # Retorno:
+    # model: Modelo de otimização de Markowitz
+    # --------------------------------------------------
+    function model_formulation(mean::Vector{Float64}, cov::Matrix{Float64}, risk_level::Float64, env::Gurobi.Env = Gurobi.Env())
+        n = size(mean)[1]
+        model = Model(() -> Gurobi.Optimizer(env))
+        set_optimizer_attribute(model, "OutputFlag", 0)
+        set_optimizer_attribute(model, "TimeLimit", 100)
+        set_optimizer_attribute(model, "MIPGap", 0.001)
+        set_optimizer_attribute(model, "Threads", min(length(Sys.cpu_info()),16))
+
+        @variable(model, x[1:n] >= 0)
+
+        @constraint(model, sum(x) == 1)
+
+        @objective(model, Max, risk_level*(mean'*x) - (1 - risk_level) * (x'*cov*x))
+        
+        return model
     end
 
     # --------------------------------------------------

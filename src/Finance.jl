@@ -21,6 +21,7 @@ module Finance
         low::Vector{Float64}
         open::Vector{Float64}
         close::Vector{Float64}
+        adjclose::Vector{Float64}
         returns::Vector{Float64}
     end
 
@@ -48,10 +49,11 @@ module Finance
         close = data["close"]
         high = data["high"]
         low = data["low"]
+        adjclose = data["adjclose"]
 
-        daily_returns  = [i == 1 ? 0 : (close[i]-close[i-1])/close[i-1] for i in eachindex(close)]
+        daily_returns  = [i == 1 ? 0 : (adjclose[i]-adjclose[i-1])/adjclose[i-1] for i in eachindex(adjclose)]
 
-        return Asset(symbol, timestamps, high, low, open, close, daily_returns)
+        return Asset(symbol, timestamps, high, low, open, close, adjclose, daily_returns)
     end
 
     # --------------------------------------------------
