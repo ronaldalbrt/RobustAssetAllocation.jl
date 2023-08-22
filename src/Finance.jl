@@ -36,6 +36,7 @@ module Finance
         assets::Vector{Asset}
         returns::Vector{Float64}
         cov_matrix::Matrix{Float64}
+        sharpe_ratio::Float64
     end
 
     # --------------------------------------------------
@@ -90,8 +91,6 @@ module Finance
         portfolio_expected_return = sum(expected_return_assets)
 
         sharpe_ratio = portfolio_expected_return / portfolio_variance
-
-        
 
         return Portfolio(assets, returns, cov_matrix, sharpe_ratio)
     end
