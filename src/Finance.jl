@@ -67,31 +67,6 @@ module Finance
 
         cov_matrix = Statistics.cov(hcat([asset.returns for asset in assets]...))
 
-        portfolio_variance = 0
-        for i in 1:size(cov_matrix)[1]
-            for j in 1:size(cov_matrix)[1]
-                if i == j
-                    portfolio_variance += cov_matrix[i,j]
-                end
-                
-                if i < j
-                    portfolio_variance += 2 * cov_matrix[i,j]
-                end
-            end
-        end
-
-        r_free = 0.13
-        r_free_assets_returns = [(asset.returns .- r_free) for asset in assets]
-
-        expected_return_assets = []
-        for returns in r_free_assets_returns
-            push!(expected_return_assets, Statistics.mean(returns))
-        end
-
-        portfolio_expected_return = sum(expected_return_assets)
-
-        sharpe_ratio = portfolio_expected_return / portfolio_variance
-
-        return Portfolio(assets, returns, cov_matrix, sharpe_ratio)
+        return Portfolio(assets, returns, cov_matrix)
     end
 end

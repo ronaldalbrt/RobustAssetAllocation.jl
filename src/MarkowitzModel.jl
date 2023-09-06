@@ -6,31 +6,31 @@ module MarkowitzModel
     # --------------------------------------------------
     # mean: Vetor de médias dos ativos
     # cov: Matriz de covariância dos ativos
-    # risk_levels: Vetor de níveis de risco
+    # min_returns: Vetor de Retornos mínimos
     # models: Vetor de modelos de otimização
     # --------------------------------------------------
     struct MarkowitzModelData
         mean::Vector{Float64}
         cov::Matrix{Float64}
-        risk_levels::Vector{Float64}
+        min_returns::Vector{Float64}
         models::Vector{Model}
     end
 
     # --------------------------------------------------
     # Construtor MarkowitzModelData
     # --------------------------------------------------
-    function MarkowitzModelData(mean::Vector{Float64}, cov::Matrix{Float64}, risk_levels::Vector{Float64})
+    function MarkowitzModelData(mean::Vector{Float64}, cov::Matrix{Float64}, min_returns::Vector{Float64})
         n = size(mean)[1]
         GRB_ENV = Gurobi.Env()
 
         models = Vector{Model}()
-        for risk_level in risk_levels
-            model = model_formulation(mean, cov, risk_level, GRB_ENV)
+        for min_return in min_returns
+            model = model_formulation(mean, cov, min_return, GRB_ENV)
             
             push!(models, model)
         end
         
-        return MarkowitzModelData(mean, cov, risk_levels, models)
+        return MarkowitzModelData(mean, cov, min_returns, models)
     end
 
     # --------------------------------------------------
@@ -39,12 +39,12 @@ module MarkowitzModel
     # Parâmetros:
     # mean: Vetor de médias dos ativos
     # cov: Matriz de covariância dos ativos
-    # risk_level: Nível de risco
+    # min_return: Retorno mínimo
     # --------------------------------------------------
     # Retorno:
     # model: Modelo de otimização de Markowitz
     # --------------------------------------------------
-    function model_formulation(mean::Vector{Float64}, cov::Matrix{Float64}, risk_level::Float64, env::Gurobi.Env = Gurobi.Env())
+    function model_formulation(mean::Vector{Float64}, cov::Matrix{Float64}, min_return::Float64, env::Gurobi.Env = Gurobi.Env())
         n = size(mean)[1]
         model = Model(() -> Gurobi.Optimizer(env))
         set_optimizer_attribute(model, "OutputFlag", 0)
@@ -55,8 +55,9 @@ module MarkowitzModel
         @variable(model, x[1:n] >= 0)
 
         @constraint(model, sum(x) == 1)
+        @constraint(model, mean'*x >= min_return)
 
-        @objective(model, Max, risk_level*(mean'*x) - (1 - risk_level) * (x'*cov*x))
+        @objective(model, Min, (x'*cov*x))
         
         return model
     end
