@@ -13,19 +13,35 @@ module RobustMarkowitzModel
         return_interval::Tuple{Vector{Float64}, Vector{Float64}}
         cov_interval::Tuple{Matrix{Float64}, Matrix{Float64}}
         minimum_return::Vector{Float64}
-        confidence_level::Float64
+        α::Float64
         models::Vector{Model}
     end
 
     # --------------------------------------------------
     # Construtor RobustMarkowitzModelData
     # --------------------------------------------------
-    function RobustMarkowitzModelData(n::Int64, returns::Vector{Float64}, cov::Matrix{Float64}, min_returns::Vector{Float64}, confidence_level::Float64)
-        t_dist = Distributions.TDist(n - 1)
-        q = quantile(t_dist, (1 - confidence_level)/2)
+    function RobustMarkowitzModelData(n::Int64, returns::Vector{Float64}, cov::Matrix{Float64}, min_returns::Vector{Float64}, α::Float64)
+        GRB_ENV = Gurobi.Env()
+        
+        q = quantile(Distributions.TDist(n - 1), α/2)
+        chi_q_u = quantile(Distributions.Chisq(n - 1), α/2)
+        chi_q_l = quantile(Distributions.Chisq(n - 1), 1 - α/2)
 
-        return_interval = (returns .+ q*diag(cov), returns - q*diag(cov))
-        # cov_interval = 
+
+        diag_cov = [cov[i,i] for i in 1:size(cov)[1]]
+        return_interval = (returns .+ q.*(diag_cov/sqrt(n)), returns .- q.*(diag_cov/sqrt(n)))
+  
+        cov_l = [(n - 1)*cov[i,j]/chi_q_l for i in 1:size(cov)[1], j in 1:size(cov)[2]]
+        cov_l = [i != j ? -cov_l[i,i]*cov_l[j,j] : cov_l[i,i] for i in 1:size(cov)[1], j in 1:size(cov)[2]]
+
+        cov_u = [(n - 1)*cov[i,j]/chi_q_u for i in 1:size(cov)[1], j in 1:size(cov)[2]]
+        cov_u = [i != j ? cov_u[i,i]*cov_u[j,j] : cov_u[i,i] for i in 1:size(cov)[1], j in 1:size(cov)[2]]
+
+        cov_interval = (cov_l, cov_u)
+
+        models = [model_formulation(return_interval, cov_interval, min_return, GRB_ENV) for min_return in min_returns]
+
+        return RobustMarkowitzModelData(n, return_interval, cov_interval, min_returns, α, models)
     end
 
     # --------------------------------------------------

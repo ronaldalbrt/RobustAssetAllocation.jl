@@ -6,6 +6,7 @@ module Finance
     # --------------------------------------------------
     # Asset
     # --------------------------------------------------
+    # n: Number of observations
     # symbol: Ticker do ativo na bolsa brasileira 
     # timestamps: Datas de dados disponíveis
     # high: Valor mais alto atingido do ativo
@@ -15,6 +16,7 @@ module Finance
     # returns: Retorno do ativo em todo o período em timestamps
     # --------------------------------------------------
     struct Asset
+        n::Int64
         symbol::AbstractString
         timestamps::Vector{Date}
         high::Vector{Float64}
@@ -28,11 +30,13 @@ module Finance
     # --------------------------------------------------
     # Portfolio
     # --------------------------------------------------
+    # n: Number of observations
     # assets: Vetor de assets na carteira
     # weights: Vetor de pesos para cada um dos assets
     # returns: Retorno de toda a carteira
     # --------------------------------------------------
     struct Portfolio
+        n::Int64
         assets::Vector{Asset}
         returns::Vector{Float64}
         cov_matrix::Matrix{Float64}
@@ -52,8 +56,9 @@ module Finance
         adjclose = data["adjclose"]
 
         daily_returns  = [i == 1 ? 0 : (adjclose[i]-adjclose[i-1])/adjclose[i-1] for i in eachindex(adjclose)]
+        n = length(timestamps)
 
-        return Asset(symbol, timestamps, high, low, open, close, adjclose, daily_returns)
+        return Asset(n, symbol, timestamps, high, low, open, close, adjclose, daily_returns)
     end
 
     # --------------------------------------------------
@@ -65,7 +70,8 @@ module Finance
         returns = [mean(asset.returns) for asset in assets]
 
         cov_matrix = Statistics.cov(hcat([asset.returns for asset in assets]...))
+        n = assets[1].n
 
-        return Portfolio(assets, returns, cov_matrix)
+        return Portfolio(n, assets, returns, cov_matrix)
     end
 end
