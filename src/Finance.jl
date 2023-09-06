@@ -36,7 +36,6 @@ module Finance
         assets::Vector{Asset}
         returns::Vector{Float64}
         cov_matrix::Matrix{Float64}
-        sharpe_ratio::Float64
     end
 
     # --------------------------------------------------
