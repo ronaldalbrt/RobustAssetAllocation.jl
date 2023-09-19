@@ -67,9 +67,9 @@ module Finance
     function Portfolio(symbol_list::Vector{AbstractString}, start_date::Date, end_date::Date)
         assets = [Asset(symbol, start_date, end_date) for symbol in symbol_list]
 
-        returns = [mean(asset.returns) for asset in assets]
+        returns = [mean(asset.returns)*250 for asset in assets]
 
-        cov_matrix = Statistics.cov(hcat([asset.returns for asset in assets]...))
+        cov_matrix = Statistics.cov(hcat([asset.returns for asset in assets]...)).*250
         n = assets[1].n
 
         return Portfolio(n, assets, returns, cov_matrix)

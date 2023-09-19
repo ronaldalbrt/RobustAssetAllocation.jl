@@ -69,6 +69,7 @@ module RobustMarkowitzModel
         set_optimizer_attribute(model, "OutputFlag", 0)
         set_optimizer_attribute(model, "TimeLimit", 100)
         set_optimizer_attribute(model, "MIPGap", 0.001)
+        set_optimizer_attribute(model, "NonConvex", 2)
         set_optimizer_attribute(model, "Threads", min(length(Sys.cpu_info()),16))
 
         @variable(model, x[1:n] >= 0)
@@ -97,17 +98,18 @@ module RobustMarkowitzModel
     # --------------------------------------------------
     function pareto_frontier(markowitz_model::RobustMarkowitzModelData)
         allocations = Vector{Vector{Float64}}()
+        allocated = Vector{Vector{Int64}}()
 
         for (_, model) in enumerate(markowitz_model.models)
             optimize!(model)
 
             push!(allocations, value.(model[:x]))
+            push!(allocated, value.(model[:y]))
         end
-
         allocation_return = alloc ->  (markowitz_model.return_interval[1]'*alloc, markowitz_model.return_interval[2]'*alloc)
         allocation_risk = alloc -> (alloc' * markowitz_model.cov_interval[1] * alloc, alloc' * markowitz_model.cov_interval[2] * alloc)
 
         
-        return allocations, allocation_return.(allocations), allocation_risk.(allocations)
+        return allocations, allocated[1], allocation_return.(allocations), allocation_risk.(allocations)
     end
 end

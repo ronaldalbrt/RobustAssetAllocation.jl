@@ -80,17 +80,19 @@ module MarkowitzModel
     # --------------------------------------------------
     function pareto_frontier(markowitz_model::MarkowitzModelData)
         allocations = Vector{Vector{Float64}}()
+        allocated = Vector{Vector{Int64}}()
 
         for (_, model) in enumerate(markowitz_model.models)
             optimize!(model)
 
             push!(allocations, value.(model[:x]))
+            push!(allocated, value.(model[:y]))
         end
 
         allocation_return = alloc -> markowitz_model.mean'*alloc
         allocation_risk = alloc -> alloc' * markowitz_model.cov * alloc
 
         
-        return allocations, allocation_return.(allocations), allocation_risk.(allocations)
+        return allocations, allocated[1], allocation_return.(allocations), allocation_risk.(allocations)
     end
 end
