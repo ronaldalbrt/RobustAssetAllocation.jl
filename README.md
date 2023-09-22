@@ -7,7 +7,7 @@ Developed by Gabriel Souto and Ronald Albert.
 <h2 align="center">
 The project
 </h2>
-The project is implements a robust optimization method for portfolio selection considering the existence of transaction costs in portfolio rebalancing. 
+The project implements a robust optimization method for portfolio selection considering the existence of transaction costs in portfolio rebalancing. 
 
 It's entirely implemented in Julia, and all the results are available in the Julia notebook `results.ipynb`.
 
