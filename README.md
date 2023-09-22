@@ -1,7 +1,7 @@
 <h1 align="center">
 <br> Robust Portfolio Optimization and Rebalancing with Transaction Cost: A Case Study in Brazil Stock Exchange
 </h1>
-Repository for the course on Optimization Methods in Finance at  <a href="https://www.cos.ufrj.br/" > PESC - Programa de Engenharia de Sistemas e Computação</a> from <a href="https://ufrj.br/" >UFRJ - Federal University of Rio de Janeiro</a>, taught by <a href="https://www.cos.ufrj.br/~pegonzalez/">Prof.  Daniel Ratton Figueiredo</a>.
+Repository for the course on Optimization Methods in Finance at  <a href="https://www.cos.ufrj.br/" > PESC - Programa de Engenharia de Sistemas e Computação</a> from <a href="https://ufrj.br/" >UFRJ - Federal University of Rio de Janeiro</a>, taught by <a href="https://www.cos.ufrj.br/~pegonzalez/">Prof.  Pedro Henrique Gonzalez</a>.
 
 Developed by Gabriel Souto and Ronald Albert.
 <h2 align="center">
